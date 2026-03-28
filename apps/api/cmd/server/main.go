@@ -67,6 +67,12 @@ func main() {
 
 	snapshotJob := jobs.NewSnapshotJob(macroRepo, snapshotRepo, signalRepo, alertRepo, cotRepo, configRepo, sourceRunRepo)
 
+	// Handlers
+	regimeHandlers := handler.NewRegimeHandlers(snapshotRepo, configRepo)
+	commodityHandlers := handler.NewCommodityHandlers(cotRepo, signalRepo, alertRepo, configRepo)
+	alertHandlers := handler.NewAlertHandlers(alertRepo, cotRepo)
+	freshnessHandlers := handler.NewFreshnessHandlers(sourceRunRepo, cotRepo)
+
 	// Router
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)
@@ -78,6 +84,23 @@ func main() {
 	r.Route("/api/v1", func(r chi.Router) {
 		// Public endpoints
 		r.Get("/health", healthHandler(pool))
+
+		// Regime
+		r.Get("/regime/current", regimeHandlers.GetCurrent)
+		r.Get("/regime/history", regimeHandlers.GetHistory)
+
+		// Commodities
+		r.Get("/commodities", commodityHandlers.List)
+		r.Get("/commodities/rankings", commodityHandlers.GetRankings)
+		r.Get("/commodities/{slug}", commodityHandlers.GetDetail)
+		r.Get("/commodities/{slug}/history", commodityHandlers.GetHistory)
+
+		// Alerts
+		r.Get("/alerts", alertHandlers.List)
+		r.Get("/alerts/{id}", alertHandlers.GetByID)
+
+		// Freshness
+		r.Get("/freshness", freshnessHandlers.Get)
 
 		// Internal endpoints (auth required)
 		r.Route("/internal", func(r chi.Router) {
