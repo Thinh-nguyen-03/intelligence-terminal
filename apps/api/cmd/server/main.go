@@ -51,11 +51,15 @@ func main() {
 
 	// Repositories
 	macroRepo := storage.NewMacroRepo(pool)
+	cotRepo := storage.NewCOTRepo(pool)
 	sourceRunRepo := storage.NewSourceRunRepo(pool)
 
 	// Jobs
 	fredClient := jobs.NewFREDClient(cfg.FREDAPIKey)
 	fredIngestJob := jobs.NewFREDIngestJob(fredClient, macroRepo, sourceRunRepo)
+
+	cftcClient := jobs.NewCFTCClient()
+	cftcIngestJob := jobs.NewCFTCIngestJob(cftcClient, cotRepo, sourceRunRepo)
 
 	// Router
 	r := chi.NewRouter()
@@ -74,6 +78,7 @@ func main() {
 			r.Use(auth.InternalAuth(cfg.InternalAuthToken))
 
 			r.Post("/jobs/ingest-macro", ingestMacroHandler(fredIngestJob))
+			r.Post("/jobs/ingest-cot", ingestCOTHandler(cftcIngestJob))
 		})
 	})
 
@@ -153,6 +158,29 @@ func ingestMacroHandler(job *jobs.FREDIngestJob) http.HandlerFunc {
 		handler.WriteJSON(w, http.StatusOK, jobResponse{
 			Status:  "success",
 			Message: "macro ingestion completed",
+		})
+	}
+}
+
+func ingestCOTHandler(job *jobs.CFTCIngestJob) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var req ingestMacroRequest
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			req.LookbackYears = 5
+		}
+		if req.LookbackYears <= 0 || req.LookbackYears > 20 {
+			req.LookbackYears = 5
+		}
+
+		if err := job.Run(r.Context(), req.LookbackYears); err != nil {
+			slog.Error("COT ingestion failed", "error", err)
+			handler.WriteError(w, r, http.StatusInternalServerError, "INTERNAL_ERROR", "COT ingestion failed: "+err.Error())
+			return
+		}
+
+		handler.WriteJSON(w, http.StatusOK, jobResponse{
+			Status:  "success",
+			Message: "COT ingestion completed",
 		})
 	}
 }
