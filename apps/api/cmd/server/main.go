@@ -54,6 +54,7 @@ func main() {
 	cotRepo := storage.NewCOTRepo(pool)
 	snapshotRepo := storage.NewSnapshotRepo(pool)
 	signalRepo := storage.NewSignalRepo(pool)
+	alertRepo := storage.NewAlertRepo(pool)
 	configRepo := storage.NewConfigRepo(pool)
 	sourceRunRepo := storage.NewSourceRunRepo(pool)
 
@@ -64,7 +65,7 @@ func main() {
 	cftcClient := jobs.NewCFTCClient()
 	cftcIngestJob := jobs.NewCFTCIngestJob(cftcClient, cotRepo, sourceRunRepo)
 
-	snapshotJob := jobs.NewSnapshotJob(macroRepo, snapshotRepo, signalRepo, cotRepo, configRepo, sourceRunRepo)
+	snapshotJob := jobs.NewSnapshotJob(macroRepo, snapshotRepo, signalRepo, alertRepo, cotRepo, configRepo, sourceRunRepo)
 
 	// Router
 	r := chi.NewRouter()

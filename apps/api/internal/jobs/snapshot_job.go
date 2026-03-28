@@ -11,11 +11,12 @@ import (
 	"github.com/0510t/intelligence-terminal/apps/api/internal/storage"
 )
 
-// SnapshotJob computes macro factor snapshots and commodity signal snapshots.
+// SnapshotJob computes macro factor snapshots, commodity signal snapshots, and alerts.
 type SnapshotJob struct {
 	macroRepo     *storage.MacroRepo
 	snapshotRepo  *storage.SnapshotRepo
 	signalRepo    *storage.SignalRepo
+	alertRepo     *storage.AlertRepo
 	cotRepo       *storage.COTRepo
 	configRepo    *storage.ConfigRepo
 	sourceRunRepo *storage.SourceRunRepo
@@ -25,6 +26,7 @@ func NewSnapshotJob(
 	macroRepo *storage.MacroRepo,
 	snapshotRepo *storage.SnapshotRepo,
 	signalRepo *storage.SignalRepo,
+	alertRepo *storage.AlertRepo,
 	cotRepo *storage.COTRepo,
 	configRepo *storage.ConfigRepo,
 	sourceRunRepo *storage.SourceRunRepo,
@@ -33,6 +35,7 @@ func NewSnapshotJob(
 		macroRepo:     macroRepo,
 		snapshotRepo:  snapshotRepo,
 		signalRepo:    signalRepo,
+		alertRepo:     alertRepo,
 		cotRepo:       cotRepo,
 		configRepo:    configRepo,
 		sourceRunRepo: sourceRunRepo,
@@ -77,7 +80,13 @@ func (j *SnapshotJob) computeAll(ctx context.Context, asOf time.Time) (int, erro
 		return 1, fmt.Errorf("commodity signals: %w", err)
 	}
 
-	return 1 + signalCount, nil
+	alertCount, err := j.generateAlerts(ctx, asOf)
+	if err != nil {
+		slog.Error("alert generation failed", "error", err)
+		// Non-fatal: signals were still computed successfully
+	}
+
+	return 1 + signalCount + alertCount, nil
 }
 
 func (j *SnapshotJob) computeMacroSnapshot(ctx context.Context, asOf time.Time) error {
@@ -240,5 +249,83 @@ func (j *SnapshotJob) computeCommoditySignals(ctx context.Context, asOf time.Tim
 		count++
 	}
 
+	return count, nil
+}
+
+func (j *SnapshotJob) generateAlerts(ctx context.Context, asOf time.Time) (int, error) {
+	params, err := j.configRepo.LoadModelParams(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("loading model params: %w", err)
+	}
+
+	// Get the current regime snapshot
+	regime, err := j.snapshotRepo.GetLatestSnapshot(ctx, params.ModelVersion)
+	if err != nil || regime == nil {
+		return 0, fmt.Errorf("no regime snapshot available for alert generation")
+	}
+
+	commodities, err := j.cotRepo.ListActiveCommodities(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("listing commodities: %w", err)
+	}
+
+	// Deactivate older alerts before generating new ones
+	if err := j.alertRepo.DeactivateOlderAlerts(ctx, asOf); err != nil {
+		slog.Warn("failed to deactivate old alerts", "error", err)
+	}
+
+	lookbackStart := asOf.AddDate(-2, 0, 0)
+	count := 0
+
+	for _, c := range commodities {
+		positions, err := j.signalRepo.ListCOTPositions(ctx, c.ID, lookbackStart, asOf)
+		if err != nil || len(positions) == 0 {
+			continue
+		}
+
+		sig := analytics.ComputePositionSignal(positions, params)
+		if sig == nil {
+			continue
+		}
+
+		input := analytics.AlertInput{
+			Commodity:        c,
+			Signal:           sig,
+			RegimeLabel:      regime.RegimeLabel,
+			RegimeConfidence: regime.Confidence,
+			IsTransitioning:  regime.IsTransitioning,
+		}
+
+		alerts := analytics.GenerateAlerts(input, params)
+		for _, a := range alerts {
+			alert := &domain.Alert{
+				CommodityID:      a.CommodityID,
+				AsOfDate:         asOf,
+				Severity:         a.Severity,
+				AlertType:        a.AlertType,
+				Headline:         a.Headline,
+				Summary:          a.Summary,
+				ExplanationJSON:  a.ExplanationJSON,
+				RegimeLabel:      a.RegimeLabel,
+				RegimeConfidence: a.RegimeConfidence,
+				FinalAlertScore:  a.FinalAlertScore,
+				IsActive:         true,
+			}
+
+			if _, err := j.alertRepo.InsertAlert(ctx, alert); err != nil {
+				slog.Warn("failed to insert alert", "commodity", c.Slug, "error", err)
+				continue
+			}
+
+			slog.Info("generated alert",
+				"commodity", c.Slug,
+				"severity", a.Severity,
+				"type", a.AlertType,
+				"score", fmt.Sprintf("%.2f", a.FinalAlertScore))
+			count++
+		}
+	}
+
+	slog.Info("alert generation complete", "count", count)
 	return count, nil
 }
