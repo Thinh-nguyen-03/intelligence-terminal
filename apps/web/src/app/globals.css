@@ -1,0 +1,103 @@
+@import "tailwindcss";
+
+@theme {
+  /* Bloomberg-inspired color palette */
+  --color-terminal-bg: #0a0a0a;
+  --color-terminal-panel: #111111;
+  --color-terminal-border: #1e1e1e;
+  --color-terminal-border-bright: #2a2a2a;
+
+  --color-amber: #ff8c00;
+  --color-amber-dim: #cc7000;
+  --color-amber-bright: #ffaa33;
+
+  --color-green: #00c853;
+  --color-green-dim: #009940;
+  --color-green-bright: #00ff6a;
+
+  --color-red: #ff3333;
+  --color-red-dim: #cc2929;
+  --color-red-bright: #ff5555;
+
+  --color-blue: #4a9eff;
+  --color-blue-dim: #3a7ecc;
+
+  --color-text-primary: #e0e0e0;
+  --color-text-secondary: #888888;
+  --color-text-muted: #555555;
+
+  /* Severity colors */
+  --color-severity-critical: #ff3333;
+  --color-severity-warning: #ff8c00;
+  --color-severity-info: #4a9eff;
+
+  /* Regime colors */
+  --color-regime-inflationary-growth: #ff8c00;
+  --color-regime-inflationary-slowdown: #ff3333;
+  --color-regime-disinflationary-slowdown: #4a9eff;
+  --color-regime-recovery: #00c853;
+  --color-regime-stress: #ff5555;
+
+  /* Font */
+  --font-mono: "JetBrains Mono", "IBM Plex Mono", "Fira Code", ui-monospace, monospace;
+}
+
+/* Base styles */
+body {
+  background-color: var(--color-terminal-bg);
+  color: var(--color-text-primary);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-terminal-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-terminal-border-bright);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
+}
+
+/* Panel component */
+.panel {
+  background-color: var(--color-terminal-panel);
+  border: 1px solid var(--color-terminal-border);
+}
+
+.panel-header {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--color-terminal-border);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-amber);
+}
+
+/* Blinking cursor effect for status */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.blink {
+  animation: blink 1s step-end infinite;
+}
+
+/* Number formatting */
+.num-positive { color: var(--color-green); }
+.num-negative { color: var(--color-red); }
+.num-neutral { color: var(--color-text-primary); }
