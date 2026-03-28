@@ -52,6 +52,8 @@ func main() {
 	// Repositories
 	macroRepo := storage.NewMacroRepo(pool)
 	cotRepo := storage.NewCOTRepo(pool)
+	snapshotRepo := storage.NewSnapshotRepo(pool)
+	configRepo := storage.NewConfigRepo(pool)
 	sourceRunRepo := storage.NewSourceRunRepo(pool)
 
 	// Jobs
@@ -60,6 +62,8 @@ func main() {
 
 	cftcClient := jobs.NewCFTCClient()
 	cftcIngestJob := jobs.NewCFTCIngestJob(cftcClient, cotRepo, sourceRunRepo)
+
+	snapshotJob := jobs.NewSnapshotJob(macroRepo, snapshotRepo, configRepo, sourceRunRepo)
 
 	// Router
 	r := chi.NewRouter()
@@ -79,6 +83,7 @@ func main() {
 
 			r.Post("/jobs/ingest-macro", ingestMacroHandler(fredIngestJob))
 			r.Post("/jobs/ingest-cot", ingestCOTHandler(cftcIngestJob))
+			r.Post("/jobs/rebuild-snapshots", rebuildSnapshotsHandler(snapshotJob))
 		})
 	})
 
@@ -181,6 +186,21 @@ func ingestCOTHandler(job *jobs.CFTCIngestJob) http.HandlerFunc {
 		handler.WriteJSON(w, http.StatusOK, jobResponse{
 			Status:  "success",
 			Message: "COT ingestion completed",
+		})
+	}
+}
+
+func rebuildSnapshotsHandler(job *jobs.SnapshotJob) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if err := job.Run(r.Context()); err != nil {
+			slog.Error("snapshot rebuild failed", "error", err)
+			handler.WriteError(w, r, http.StatusInternalServerError, "INTERNAL_ERROR", "snapshot rebuild failed: "+err.Error())
+			return
+		}
+
+		handler.WriteJSON(w, http.StatusOK, jobResponse{
+			Status:  "success",
+			Message: "snapshot rebuild completed",
 		})
 	}
 }
