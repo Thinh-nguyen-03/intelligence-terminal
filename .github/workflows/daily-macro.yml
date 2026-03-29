@@ -1,0 +1,43 @@
+name: Daily Macro Update
+
+# Some FRED series (yield curve, dollar index, WTI spot) are daily.
+# This keeps the stress/growth factors fresh between weekly COT runs.
+on:
+  schedule:
+    - cron: "0 14 * * 1-5"  # Weekdays 14:00 UTC (after US market open)
+  workflow_dispatch:
+
+jobs:
+  macro-update:
+    name: Macro Ingest + Snapshot Rebuild
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Ingest FRED macro data
+        run: |
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "${{ secrets.API_URL }}/api/v1/internal/jobs/ingest-macro" \
+            -H "Authorization: Bearer ${{ secrets.INTERNAL_AUTH_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d '{"lookback_years": 2}')
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | head -n-1)
+          echo "Response: $BODY"
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "::error::Macro ingestion failed with HTTP $HTTP_CODE"
+            exit 1
+          fi
+
+      - name: Rebuild snapshots + alerts
+        run: |
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "${{ secrets.API_URL }}/api/v1/internal/jobs/rebuild-snapshots" \
+            -H "Authorization: Bearer ${{ secrets.INTERNAL_AUTH_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d "{}")
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | head -n-1)
+          echo "Response: $BODY"
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "::error::Snapshot rebuild failed with HTTP $HTTP_CODE"
+            exit 1
+          fi

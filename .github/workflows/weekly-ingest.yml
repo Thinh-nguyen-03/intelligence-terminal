@@ -1,0 +1,70 @@
+name: Weekly Ingestion
+
+# COT reports are released every Friday afternoon (ET).
+# This runs Saturday 06:00 UTC to ensure Friday's report is available.
+# Also runs macro ingestion to pick up any new monthly FRED releases.
+on:
+  schedule:
+    - cron: "0 6 * * 6"   # Saturday 06:00 UTC
+  workflow_dispatch:        # allow manual trigger from GitHub Actions UI
+    inputs:
+      lookback_years:
+        description: "Lookback years for ingestion"
+        required: false
+        default: "5"
+
+jobs:
+  ingest:
+    name: Ingest + Rebuild
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Ingest FRED macro data
+        run: |
+          YEARS=${{ github.event.inputs.lookback_years || '5' }}
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "${{ secrets.API_URL }}/api/v1/internal/jobs/ingest-macro" \
+            -H "Authorization: Bearer ${{ secrets.INTERNAL_AUTH_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d "{\"lookback_years\": $YEARS}")
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | head -n-1)
+          echo "Response: $BODY"
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "::error::Macro ingestion failed with HTTP $HTTP_CODE"
+            exit 1
+          fi
+
+      - name: Ingest CFTC COT data
+        run: |
+          YEARS=${{ github.event.inputs.lookback_years || '5' }}
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "${{ secrets.API_URL }}/api/v1/internal/jobs/ingest-cot" \
+            -H "Authorization: Bearer ${{ secrets.INTERNAL_AUTH_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d "{\"lookback_years\": $YEARS}")
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | head -n-1)
+          echo "Response: $BODY"
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "::error::COT ingestion failed with HTTP $HTTP_CODE"
+            exit 1
+          fi
+
+      - name: Rebuild snapshots + signals + alerts
+        run: |
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "${{ secrets.API_URL }}/api/v1/internal/jobs/rebuild-snapshots" \
+            -H "Authorization: Bearer ${{ secrets.INTERNAL_AUTH_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d "{}")
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | head -n-1)
+          echo "Response: $BODY"
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "::error::Snapshot rebuild failed with HTTP $HTTP_CODE"
+            exit 1
+          fi
+
+      - name: Verify health
+        run: |
+          curl -sf "${{ secrets.API_URL }}/api/v1/health" || \
+            (echo "::warning::Health check failed after ingestion" && exit 0)
