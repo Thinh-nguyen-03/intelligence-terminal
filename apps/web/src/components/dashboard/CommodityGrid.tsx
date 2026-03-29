@@ -42,7 +42,7 @@ export function CommodityGrid({ commodities }: Props) {
                     <td className="py-2 pr-4">
                       <Link
                         href={`/commodities/${c.commodity.slug}`}
-                        className="text-amber hover:text-amber-bright transition-colors"
+                        className="text-green hover:text-green-bright transition-colors"
                       >
                         {c.commodity.name}
                       </Link>

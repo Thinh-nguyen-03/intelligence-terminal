@@ -57,7 +57,7 @@ export default function DashboardPage() {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-text-muted text-[14px]">
-          <span className="text-amber">INTEL TERMINAL</span> Loading...
+          <span className="text-green">INTEL</span> <span className="text-amber">TERMINAL</span> Loading...
           <span className="blink">_</span>
         </div>
       </div>

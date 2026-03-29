@@ -52,7 +52,7 @@ export default function AlertDetailPage() {
         <div className="flex gap-4 mt-3 text-[11px]">
           <span className="text-text-muted">
             Commodity:{" "}
-            <Link href={`/commodities/${alert.commodity_slug}`} className="text-amber hover:text-amber-bright">
+            <Link href={`/commodities/${alert.commodity_slug}`} className="text-green hover:text-green-bright">
               {alert.commodity_name}
             </Link>
           </span>

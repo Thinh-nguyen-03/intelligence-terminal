@@ -50,7 +50,7 @@ export default function CommodityDetailPage() {
         <Link href="/commodities" className="text-text-muted hover:text-text-primary text-[12px]">
           &larr; COMMODITIES
         </Link>
-        <h1 className="text-amber text-[18px] font-bold">{detail.commodity.name}</h1>
+        <h1 className="text-green text-[18px] font-bold">{detail.commodity.name}</h1>
         <span className="text-text-muted text-[12px]">{detail.commodity.group_name}</span>
       </div>
 

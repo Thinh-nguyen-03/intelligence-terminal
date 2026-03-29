@@ -1,42 +1,45 @@
 @import "tailwindcss";
 
 @theme {
-  /* Bloomberg-inspired color palette */
+  /* Bloomberg-inspired color palette — bright terminal */
   --color-terminal-bg: #0a0a0a;
   --color-terminal-panel: #111111;
   --color-terminal-border: #1e1e1e;
-  --color-terminal-border-bright: #2a2a2a;
+  --color-terminal-border-bright: #333333;
 
-  --color-amber: #ff8c00;
-  --color-amber-dim: #cc7000;
-  --color-amber-bright: #ffaa33;
+  --color-amber: #ffaa22;
+  --color-amber-dim: #dd8800;
+  --color-amber-bright: #ffcc55;
 
-  --color-green: #00c853;
-  --color-green-dim: #009940;
-  --color-green-bright: #00ff6a;
+  --color-green: #00e676;
+  --color-green-dim: #00c853;
+  --color-green-bright: #69ff97;
 
-  --color-red: #ff3333;
-  --color-red-dim: #cc2929;
-  --color-red-bright: #ff5555;
+  --color-red: #ff4455;
+  --color-red-dim: #dd3344;
+  --color-red-bright: #ff6b7a;
 
-  --color-blue: #4a9eff;
-  --color-blue-dim: #3a7ecc;
+  --color-blue: #5cb8ff;
+  --color-blue-dim: #4a9eff;
 
-  --color-text-primary: #e0e0e0;
-  --color-text-secondary: #888888;
-  --color-text-muted: #555555;
+  --color-cyan: #00e5ff;
+  --color-cyan-dim: #00b8d4;
+
+  --color-text-primary: #eaeaea;
+  --color-text-secondary: #999999;
+  --color-text-muted: #606060;
 
   /* Severity colors */
-  --color-severity-critical: #ff3333;
-  --color-severity-warning: #ff8c00;
-  --color-severity-info: #4a9eff;
+  --color-severity-critical: #ff4455;
+  --color-severity-warning: #ffaa22;
+  --color-severity-info: #5cb8ff;
 
   /* Regime colors */
-  --color-regime-inflationary-growth: #ff8c00;
-  --color-regime-inflationary-slowdown: #ff3333;
-  --color-regime-disinflationary-slowdown: #4a9eff;
-  --color-regime-recovery: #00c853;
-  --color-regime-stress: #ff5555;
+  --color-regime-inflationary-growth: #ffaa22;
+  --color-regime-inflationary-slowdown: #ff4455;
+  --color-regime-disinflationary-slowdown: #5cb8ff;
+  --color-regime-recovery: #00e676;
+  --color-regime-stress: #ff6b7a;
 
   /* Font */
   --font-mono: "JetBrains Mono", "IBM Plex Mono", "Fira Code", ui-monospace, monospace;
@@ -84,7 +87,7 @@ body {
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--color-amber);
+  color: var(--color-green);
 }
 
 /* Blinking cursor effect for status */

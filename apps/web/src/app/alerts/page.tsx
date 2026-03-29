@@ -32,7 +32,7 @@ export default function AlertsPage() {
   return (
     <div className="space-y-3 max-w-5xl mx-auto">
       <div className="flex items-center justify-between">
-        <h1 className="text-amber text-[16px] font-bold">ACTIVE ALERTS</h1>
+        <h1 className="text-green text-[16px] font-bold">ACTIVE ALERTS</h1>
         <div className="flex gap-1">
           {SEVERITY_FILTERS.map((s) => (
             <button
@@ -40,7 +40,7 @@ export default function AlertsPage() {
               onClick={() => setFilter(s)}
               className={`px-3 py-1 text-[10px] uppercase tracking-wider border rounded transition-colors ${
                 filter === s
-                  ? "text-amber border-amber bg-amber/10"
+                  ? "text-green border-green bg-green/10"
                   : "text-text-muted border-terminal-border hover:border-terminal-border-bright"
               }`}
             >
@@ -70,7 +70,7 @@ export default function AlertsPage() {
                   <SeverityBadge severity={alert.severity}>
                     {alert.severity}
                   </SeverityBadge>
-                  <span className="text-amber text-[12px] font-medium">
+                  <span className="text-green text-[12px] font-medium">
                     {alert.commodity_name}
                   </span>
                   <span className="text-[10px] text-text-muted">

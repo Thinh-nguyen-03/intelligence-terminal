@@ -28,7 +28,7 @@ export default function CommoditiesPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <h1 className="text-amber text-[16px] font-bold">COMMODITIES</h1>
+      <h1 className="text-green text-[16px] font-bold">COMMODITIES</h1>
       {Object.entries(groups).map(([group, items]) => (
         <div key={group}>
           <h2 className="text-[12px] text-text-muted uppercase tracking-wider mb-2 border-b border-terminal-border pb-1">
@@ -41,7 +41,7 @@ export default function CommoditiesPage() {
                 href={`/commodities/${c.slug}`}
                 className="panel p-3 hover:border-terminal-border-bright transition-colors"
               >
-                <div className="text-amber text-[13px] font-medium">{c.name}</div>
+                <div className="text-green text-[13px] font-medium">{c.name}</div>
                 <div className="text-[10px] text-text-muted mt-1">{c.slug}</div>
               </Link>
             ))}

@@ -28,7 +28,7 @@ export function TopMovers({ title, entries, limit = 5 }: Props) {
               <span className="w-4 text-text-muted text-right">{i + 1}</span>
               <Link
                 href={`/commodities/${entry.slug}`}
-                className="flex-1 text-text-primary hover:text-amber transition-colors truncate"
+                className="flex-1 text-text-primary hover:text-green transition-colors truncate"
               >
                 {entry.name}
               </Link>

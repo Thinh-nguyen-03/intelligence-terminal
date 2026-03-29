@@ -14,7 +14,7 @@ export function AlertsFeed({ alerts }: Props) {
     <Panel
       title="Active Alerts"
       action={
-        <Link href="/alerts" className="text-[10px] text-amber hover:text-amber-bright">
+        <Link href="/alerts" className="text-[10px] text-green hover:text-green-bright">
           VIEW ALL
         </Link>
       }

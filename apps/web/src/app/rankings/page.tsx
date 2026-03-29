@@ -28,7 +28,7 @@ export default function RankingsPage() {
 
   return (
     <div className="space-y-3">
-      <h1 className="text-amber text-[16px] font-bold">COMMODITY RANKINGS</h1>
+      <h1 className="text-green text-[16px] font-bold">COMMODITY RANKINGS</h1>
 
       <div className="grid grid-cols-2 gap-3">
         <RankingTable title="Crowding Score" entries={rankings.crowding} />
@@ -62,7 +62,7 @@ function RankingTable({ title, entries }: { title: string; entries: RankingEntry
               <td className="py-1.5">
                 <Link
                   href={`/commodities/${entry.slug}`}
-                  className="text-text-primary hover:text-amber transition-colors"
+                  className="text-text-primary hover:text-green transition-colors"
                 >
                   {entry.name}
                 </Link>
