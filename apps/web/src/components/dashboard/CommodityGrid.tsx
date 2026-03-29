@@ -2,11 +2,19 @@
 
 import Link from "next/link";
 import { Panel } from "@/components/common/Panel";
-import { scoreColor, formatScore, formatPercent } from "@/lib/format";
+import { scoreColor, scoreCellBg, formatScore, formatPercent } from "@/lib/format";
 import type { CommodityDetailResponse } from "@/types/api";
 
 interface Props {
   commodities: CommodityDetailResponse[];
+}
+
+function ScoreCell({ score }: { score: number }) {
+  return (
+    <td className={`text-right py-2 px-2 tabular-nums font-medium ${scoreColor(score)} ${scoreCellBg(score)}`}>
+      {formatScore(score)}
+    </td>
+  );
 }
 
 export function CommodityGrid({ commodities }: Props) {
@@ -37,16 +45,16 @@ export function CommodityGrid({ commodities }: Props) {
                 return (
                   <tr
                     key={c.commodity.slug}
-                    className="border-b border-terminal-border/50 hover:bg-terminal-border/30 transition-colors"
+                    className="border-b border-terminal-border/50 hover:bg-terminal-border/20 transition-colors"
                   >
                     <td className="py-2 pr-4">
                       <Link
                         href={`/commodities/${c.commodity.slug}`}
-                        className="text-green hover:text-green-bright transition-colors"
+                        className="text-amber hover:text-amber-bright transition-colors"
                       >
                         {c.commodity.name}
                       </Link>
-                      <div className="text-[10px] text-text-muted">
+                      <div className="text-[10px] text-text-muted uppercase tracking-wide mt-0.5">
                         {c.commodity.group_name}
                       </div>
                     </td>
@@ -66,23 +74,15 @@ export function CommodityGrid({ commodities }: Props) {
                             <span className="text-text-muted">--</span>
                           )}
                         </td>
-                        <td className="text-right py-2 px-2 tabular-nums">
+                        <td className="text-right py-2 px-2 tabular-nums text-text-secondary">
                           {sig.position_percentile_52w != null
                             ? formatPercent(sig.position_percentile_52w, 0)
                             : "--"}
                         </td>
-                        <td className={`text-right py-2 px-2 tabular-nums ${scoreColor(sig.crowding_score)}`}>
-                          {formatScore(sig.crowding_score)}
-                        </td>
-                        <td className={`text-right py-2 px-2 tabular-nums ${scoreColor(sig.squeeze_risk_score)}`}>
-                          {formatScore(sig.squeeze_risk_score)}
-                        </td>
-                        <td className={`text-right py-2 px-2 tabular-nums ${scoreColor(sig.reversal_risk_score)}`}>
-                          {formatScore(sig.reversal_risk_score)}
-                        </td>
-                        <td className={`text-right py-2 px-2 tabular-nums ${scoreColor(sig.trend_support_score)}`}>
-                          {formatScore(sig.trend_support_score)}
-                        </td>
+                        <ScoreCell score={sig.crowding_score} />
+                        <ScoreCell score={sig.squeeze_risk_score} />
+                        <ScoreCell score={sig.reversal_risk_score} />
+                        <ScoreCell score={sig.trend_support_score} />
                       </>
                     ) : (
                       <td colSpan={7} className="text-center py-2 text-text-muted">

@@ -49,7 +49,34 @@ export function timeAgo(dateStr: string): string {
 export function scoreColor(score: number): string {
   if (score >= 0.7) return "text-red";
   if (score >= 0.4) return "text-amber";
-  return "text-text-secondary";
+  return "text-text-muted";
+}
+
+// Background heat tint for score cells in tables
+export function scoreCellBg(score: number): string {
+  if (score >= 0.7) return "bg-red/10";
+  if (score >= 0.4) return "bg-amber/10";
+  return "";
+}
+
+// Format alert_type slug → readable ALL CAPS label
+export function formatAlertType(alertType: string): string {
+  return alertType.replace(/_/g, " ").toUpperCase();
+}
+
+// Format a label as ALL CAPS
+export function label(text: string): string {
+  return text.toUpperCase();
+}
+
+// Left border color class for alert severity
+export function severityBorder(severity: string): string {
+  switch (severity) {
+    case "critical": return "border-l-4 border-l-red";
+    case "warning":  return "border-l-4 border-l-amber";
+    case "info":     return "border-l-4 border-l-blue";
+    default:         return "border-l-4 border-l-terminal-border";
+  }
 }
 
 export function severityColor(severity: string): string {

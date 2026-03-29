@@ -19,11 +19,8 @@ export function Header() {
       <div className="flex items-center h-10 px-4">
         {/* Logo / Title */}
         <Link href="/" className="flex items-center gap-2 mr-8">
-          <span className="text-green font-bold text-[14px] tracking-tight">
-            INTEL
-          </span>
-          <span className="text-amber font-bold text-[14px] tracking-tight">
-            TERMINAL
+          <span className="text-amber font-bold text-[14px] tracking-widest">
+            INTEL TERMINAL
           </span>
           <span className="text-text-muted text-[10px]">v2</span>
         </Link>
@@ -41,8 +38,8 @@ export function Header() {
                 href={item.href}
                 className={`px-3 py-1.5 text-[11px] tracking-wider transition-colors ${
                   isActive
-                    ? "text-green bg-green/10 border-b-2 border-green"
-                    : "text-text-secondary hover:text-text-primary hover:bg-terminal-border/50"
+                    ? "text-amber bg-amber/10 border-b-2 border-amber"
+                    : "text-text-muted hover:text-text-primary hover:bg-terminal-border/50"
                 }`}
               >
                 {item.label}

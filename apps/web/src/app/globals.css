@@ -26,8 +26,8 @@
   --color-cyan-dim: #00b8d4;
 
   --color-text-primary: #eaeaea;
-  --color-text-secondary: #999999;
-  --color-text-muted: #606060;
+  --color-text-secondary: #c0c0c0;
+  --color-text-muted: #888888;
 
   /* Severity colors */
   --color-severity-critical: #ff4455;
@@ -87,7 +87,7 @@ body {
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--color-green);
+  color: var(--color-amber);
 }
 
 /* Blinking cursor effect for status */

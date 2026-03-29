@@ -19,7 +19,7 @@ export default function RankingsPage() {
   }, []);
 
   if (loading) {
-    return <div className="text-text-muted p-8">Loading rankings...<span className="blink">_</span></div>;
+    return <div className="text-text-muted p-8 tracking-widest">LOADING RANKINGS<span className="blink">_</span></div>;
   }
 
   if (!rankings) {
@@ -28,7 +28,7 @@ export default function RankingsPage() {
 
   return (
     <div className="space-y-3">
-      <h1 className="text-green text-[16px] font-bold">COMMODITY RANKINGS</h1>
+      <h1 className="text-amber text-[14px] font-bold tracking-widest">COMMODITY RANKINGS</h1>
 
       <div className="grid grid-cols-2 gap-3">
         <RankingTable title="Crowding Score" entries={rankings.crowding} />
@@ -46,35 +46,35 @@ function RankingTable({ title, entries }: { title: string; entries: RankingEntry
       <table className="w-full text-[12px]">
         <thead>
           <tr className="text-[10px] text-text-muted uppercase tracking-wider border-b border-terminal-border">
-            <th className="text-left py-1.5 w-8">#</th>
+            <th className="text-left py-1.5 w-6">#</th>
             <th className="text-left py-1.5">Commodity</th>
-            <th className="text-right py-1.5">Score</th>
-            <th className="text-right py-1.5 w-24">Bar</th>
+            <th className="text-right py-1.5 w-16">Score</th>
+            <th className="text-right py-1.5 w-24 pr-1">Bar</th>
           </tr>
         </thead>
         <tbody>
           {entries.map((entry, i) => (
             <tr
               key={entry.slug}
-              className="border-b border-terminal-border/30 hover:bg-terminal-border/30"
+              className="border-b border-terminal-border/30 hover:bg-terminal-border/20 transition-colors"
             >
-              <td className="py-1.5 text-text-muted">{i + 1}</td>
+              <td className="py-1.5 text-text-muted text-[10px]">{i + 1}</td>
               <td className="py-1.5">
                 <Link
                   href={`/commodities/${entry.slug}`}
-                  className="text-text-primary hover:text-green transition-colors"
+                  className="text-text-primary hover:text-amber transition-colors"
                 >
                   {entry.name}
                 </Link>
               </td>
-              <td className={`text-right py-1.5 tabular-nums font-medium ${scoreColor(entry.score)}`}>
+              <td className={`text-right py-1.5 tabular-nums font-bold ${scoreColor(entry.score)}`}>
                 {formatScore(entry.score)}
               </td>
-              <td className="py-1.5 pl-3">
-                <div className="h-[5px] bg-terminal-border rounded-sm overflow-hidden">
+              <td className="py-1.5 pl-3 pr-1">
+                <div className="h-[4px] bg-terminal-border rounded-full overflow-hidden">
                   <div
-                    className={`h-full rounded-sm ${
-                      entry.score >= 0.7 ? "bg-red" : entry.score >= 0.4 ? "bg-amber" : "bg-blue"
+                    className={`h-full rounded-full ${
+                      entry.score >= 0.7 ? "bg-red" : entry.score >= 0.4 ? "bg-amber" : "bg-text-muted"
                     }`}
                     style={{ width: `${Math.min(entry.score * 100, 100)}%` }}
                   />

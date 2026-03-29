@@ -5,7 +5,7 @@ import Link from "next/link";
 import { getAlerts } from "@/lib/api";
 import { Panel } from "@/components/common/Panel";
 import { SeverityBadge } from "@/components/common/Badge";
-import { formatScore, regimeColor } from "@/lib/format";
+import { formatScore, regimeColor, severityBorder, formatAlertType } from "@/lib/format";
 import type { Alert } from "@/types/api";
 
 const SEVERITY_FILTERS = ["all", "critical", "warning", "info"] as const;
@@ -26,13 +26,13 @@ export default function AlertsPage() {
     filter === "all" ? alerts : alerts.filter((a) => a.severity === filter);
 
   if (loading) {
-    return <div className="text-text-muted p-8">Loading alerts...<span className="blink">_</span></div>;
+    return <div className="text-text-muted p-8 tracking-widest">LOADING ALERTS<span className="blink">_</span></div>;
   }
 
   return (
     <div className="space-y-3 max-w-5xl mx-auto">
       <div className="flex items-center justify-between">
-        <h1 className="text-green text-[16px] font-bold">ACTIVE ALERTS</h1>
+        <h1 className="text-amber text-[14px] font-bold tracking-widest">ACTIVE ALERTS</h1>
         <div className="flex gap-1">
           {SEVERITY_FILTERS.map((s) => (
             <button
@@ -40,13 +40,13 @@ export default function AlertsPage() {
               onClick={() => setFilter(s)}
               className={`px-3 py-1 text-[10px] uppercase tracking-wider border rounded transition-colors ${
                 filter === s
-                  ? "text-green border-green bg-green/10"
-                  : "text-text-muted border-terminal-border hover:border-terminal-border-bright"
+                  ? "text-amber border-amber bg-amber/10"
+                  : "text-text-muted border-terminal-border hover:border-terminal-border-bright hover:text-text-secondary"
               }`}
             >
               {s}
               {s !== "all" && (
-                <span className="ml-1 text-text-muted">
+                <span className="ml-1 opacity-60">
                   ({alerts.filter((a) => a.severity === s).length})
                 </span>
               )}
@@ -64,40 +64,41 @@ export default function AlertsPage() {
               <Link
                 key={alert.id}
                 href={`/alerts/${alert.id}`}
-                className="block p-3 bg-terminal-bg border border-terminal-border rounded hover:border-terminal-border-bright transition-colors"
+                className={`block p-3 bg-terminal-bg border border-terminal-border rounded hover:border-terminal-border-bright transition-colors ${severityBorder(alert.severity)}`}
               >
-                <div className="flex items-center gap-3 mb-2">
+                <div className="flex items-center gap-3 mb-1.5">
                   <SeverityBadge severity={alert.severity}>
                     {alert.severity}
                   </SeverityBadge>
-                  <span className="text-green text-[12px] font-medium">
+                  <span className="text-amber text-[12px] font-medium">
                     {alert.commodity_name}
                   </span>
-                  <span className="text-[10px] text-text-muted">
-                    {alert.alert_type.replace(/_/g, " ")}
+                  <span className="text-[10px] text-text-muted uppercase tracking-wide">
+                    {formatAlertType(alert.alert_type)}
                   </span>
                   <span className="ml-auto text-[11px] text-text-muted tabular-nums">
-                    Score: {formatScore(alert.final_alert_score)}
+                    Score: <span className="text-text-secondary">{formatScore(alert.final_alert_score)}</span>
                   </span>
-                  <span className="text-[10px] text-text-muted">{alert.as_of_date}</span>
+                  <span className="text-[10px] text-text-muted tabular-nums">{alert.as_of_date}</span>
                 </div>
 
-                <div className="text-[13px] text-text-primary mb-1">
+                <div className="text-[13px] text-text-primary mb-1 font-medium">
                   {alert.headline}
                 </div>
-                <div className="text-[11px] text-text-secondary line-clamp-2">
+                <div className="text-[11px] text-text-secondary line-clamp-2 leading-relaxed">
                   {alert.summary}
                 </div>
 
-                <div className="flex items-center gap-4 mt-2 text-[10px] text-text-muted">
+                <div className="flex items-center gap-4 mt-2 text-[10px] text-text-muted border-t border-terminal-border/50 pt-2">
                   <span>
                     Regime:{" "}
                     <span className={regimeColor(alert.regime_label)}>
-                      {alert.regime_label}
+                      {alert.regime_label.replace(" (transitioning)", "")}
+                      {alert.regime_label.includes("transitioning") && " ⟳"}
                     </span>
                   </span>
                   <span>
-                    Confidence: {alert.regime_confidence.toFixed(1)}%
+                    Confidence: <span className="text-text-secondary">{alert.regime_confidence.toFixed(0)}%</span>
                   </span>
                 </div>
               </Link>

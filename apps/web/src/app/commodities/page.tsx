@@ -17,10 +17,9 @@ export default function CommoditiesPage() {
   }, []);
 
   if (loading) {
-    return <div className="text-text-muted p-8">Loading commodities...<span className="blink">_</span></div>;
+    return <div className="text-text-muted p-8 tracking-widest">LOADING<span className="blink">_</span></div>;
   }
 
-  // Group by group_name
   const groups = commodities.reduce<Record<string, Commodity[]>>((acc, c) => {
     (acc[c.group_name] ||= []).push(c);
     return acc;
@@ -28,10 +27,10 @@ export default function CommoditiesPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <h1 className="text-green text-[16px] font-bold">COMMODITIES</h1>
+      <h1 className="text-amber text-[14px] font-bold tracking-widest">COMMODITIES</h1>
       {Object.entries(groups).map(([group, items]) => (
         <div key={group}>
-          <h2 className="text-[12px] text-text-muted uppercase tracking-wider mb-2 border-b border-terminal-border pb-1">
+          <h2 className="text-[10px] text-text-muted uppercase tracking-widest mb-2 border-b border-terminal-border pb-1">
             {group}
           </h2>
           <div className="grid grid-cols-3 gap-2">
@@ -39,10 +38,12 @@ export default function CommoditiesPage() {
               <Link
                 key={c.slug}
                 href={`/commodities/${c.slug}`}
-                className="panel p-3 hover:border-terminal-border-bright transition-colors"
+                className="panel p-3 hover:border-terminal-border-bright transition-colors group"
               >
-                <div className="text-green text-[13px] font-medium">{c.name}</div>
-                <div className="text-[10px] text-text-muted mt-1">{c.slug}</div>
+                <div className="text-text-primary group-hover:text-amber text-[13px] font-medium transition-colors">
+                  {c.name}
+                </div>
+                <div className="text-[10px] text-text-muted uppercase tracking-wide mt-1">{c.slug}</div>
               </Link>
             ))}
           </div>

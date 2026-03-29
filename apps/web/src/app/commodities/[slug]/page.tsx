@@ -7,7 +7,7 @@ import { getCommodityDetail, getCommodityHistory } from "@/lib/api";
 import { Panel } from "@/components/common/Panel";
 import { ScoreBar } from "@/components/common/ScoreBar";
 import { SeverityBadge } from "@/components/common/Badge";
-import { formatPercent, formatCompactNumber, formatDate } from "@/lib/format";
+import { formatPercent, formatCompactNumber, formatDate, severityBorder, formatAlertType } from "@/lib/format";
 import type { CommodityDetailResponse, SignalSnapshot } from "@/types/api";
 
 export default function CommodityDetailPage() {
@@ -34,7 +34,7 @@ export default function CommodityDetailPage() {
   }, [slug]);
 
   if (loading) {
-    return <div className="text-text-muted p-8">Loading {slug}...<span className="blink">_</span></div>;
+    return <div className="text-text-muted p-8 tracking-widest">LOADING<span className="blink">_</span></div>;
   }
 
   if (!detail) {
@@ -46,12 +46,13 @@ export default function CommodityDetailPage() {
   return (
     <div className="space-y-3">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <Link href="/commodities" className="text-text-muted hover:text-text-primary text-[12px]">
-          &larr; COMMODITIES
+      <div className="flex items-center gap-3">
+        <Link href="/commodities" className="text-text-muted hover:text-amber text-[11px] uppercase tracking-wide transition-colors">
+          ← Commodities
         </Link>
-        <h1 className="text-green text-[18px] font-bold">{detail.commodity.name}</h1>
-        <span className="text-text-muted text-[12px]">{detail.commodity.group_name}</span>
+        <span className="text-terminal-border">/</span>
+        <h1 className="text-amber text-[16px] font-bold">{detail.commodity.name}</h1>
+        <span className="text-[10px] text-text-muted uppercase tracking-widest">{detail.commodity.group_name}</span>
       </div>
 
       <div className="grid grid-cols-12 gap-3">
@@ -72,39 +73,16 @@ export default function CommodityDetailPage() {
         </div>
 
         {/* Key Metrics */}
-        <div className="col-span-4 space-y-3">
+        <div className="col-span-4">
           <Panel title="Key Metrics">
             {sig ? (
-              <div className="grid grid-cols-2 gap-3">
-                <MetricBox
-                  label="Net MM %OI"
-                  value={formatPercent(sig.net_mm_pct_oi)}
-                  positive={sig.net_mm_pct_oi >= 0}
-                />
-                <MetricBox
-                  label="Net Managed Money"
-                  value={formatCompactNumber(sig.net_managed_money)}
-                  positive={sig.net_managed_money >= 0}
-                />
-                <MetricBox
-                  label="Z-Score 52w"
-                  value={sig.position_zscore_52w?.toFixed(2) ?? "--"}
-                  positive={(sig.position_zscore_52w ?? 0) >= 0}
-                />
-                <MetricBox
-                  label="Percentile 52w"
-                  value={sig.position_percentile_52w != null ? formatPercent(sig.position_percentile_52w, 0) : "--"}
-                />
-                <MetricBox
-                  label="Z-Score 26w"
-                  value={sig.position_zscore_26w?.toFixed(2) ?? "--"}
-                  positive={(sig.position_zscore_26w ?? 0) >= 0}
-                />
-                <MetricBox
-                  label="Weekly Change"
-                  value={sig.weekly_change_net_mm != null ? formatCompactNumber(sig.weekly_change_net_mm) : "--"}
-                  positive={(sig.weekly_change_net_mm ?? 0) >= 0}
-                />
+              <div className="grid grid-cols-2 gap-2">
+                <MetricBox label="Net MM %OI" value={formatPercent(sig.net_mm_pct_oi)} positive={sig.net_mm_pct_oi >= 0} />
+                <MetricBox label="Net Managed Money" value={formatCompactNumber(sig.net_managed_money)} positive={sig.net_managed_money >= 0} />
+                <MetricBox label="Z-Score 52w" value={sig.position_zscore_52w?.toFixed(2) ?? "--"} positive={(sig.position_zscore_52w ?? 0) >= 0} />
+                <MetricBox label="Percentile 52w" value={sig.position_percentile_52w != null ? formatPercent(sig.position_percentile_52w, 0) : "--"} />
+                <MetricBox label="Z-Score 26w" value={sig.position_zscore_26w?.toFixed(2) ?? "--"} positive={(sig.position_zscore_26w ?? 0) >= 0} />
+                <MetricBox label="Weekly Change" value={sig.weekly_change_net_mm != null ? formatCompactNumber(sig.weekly_change_net_mm) : "--"} positive={(sig.weekly_change_net_mm ?? 0) >= 0} />
               </div>
             ) : (
               <div className="text-text-muted py-4">No signal data</div>
@@ -123,13 +101,14 @@ export default function CommodityDetailPage() {
                   <Link
                     key={a.id}
                     href={`/alerts/${a.id}`}
-                    className="block p-2 bg-terminal-bg border border-terminal-border rounded hover:border-terminal-border-bright"
+                    className={`block p-2.5 bg-terminal-bg border border-terminal-border rounded hover:border-terminal-border-bright transition-colors ${severityBorder(a.severity)}`}
                   >
                     <div className="flex items-center gap-2 mb-1">
                       <SeverityBadge severity={a.severity}>{a.severity}</SeverityBadge>
-                      <span className="text-[10px] text-text-muted">{a.as_of_date}</span>
+                      <span className="text-[10px] text-text-muted uppercase tracking-wide">{formatAlertType(a.alert_type)}</span>
+                      <span className="ml-auto text-[10px] text-text-muted tabular-nums">{a.as_of_date}</span>
                     </div>
-                    <div className="text-[11px]">{a.headline}</div>
+                    <div className="text-[11px] text-text-secondary">{a.headline}</div>
                   </Link>
                 ))}
               </div>
@@ -159,15 +138,19 @@ export default function CommodityDetailPage() {
               </thead>
               <tbody>
                 {history.map((s) => (
-                  <tr key={s.as_of_date} className="border-b border-terminal-border/30">
-                    <td className="py-1.5 pr-3 text-text-secondary">{formatDate(s.as_of_date)}</td>
+                  <tr key={s.as_of_date} className="border-b border-terminal-border/30 hover:bg-terminal-border/20">
+                    <td className="py-1.5 pr-3 text-text-muted tabular-nums">{formatDate(s.as_of_date)}</td>
                     <td className="text-right py-1.5 px-2 tabular-nums">
-                      {formatPercent(s.net_mm_pct_oi)}
+                      <span className={s.net_mm_pct_oi >= 0 ? "num-positive" : "num-negative"}>
+                        {formatPercent(s.net_mm_pct_oi)}
+                      </span>
                     </td>
                     <td className="text-right py-1.5 px-2 tabular-nums">
-                      {s.position_zscore_52w?.toFixed(2) ?? "--"}
+                      {s.position_zscore_52w != null
+                        ? <span className={s.position_zscore_52w >= 0 ? "num-positive" : "num-negative"}>{s.position_zscore_52w.toFixed(2)}</span>
+                        : "--"}
                     </td>
-                    <td className="text-right py-1.5 px-2 tabular-nums">
+                    <td className="text-right py-1.5 px-2 tabular-nums text-text-secondary">
                       {s.position_percentile_52w != null ? formatPercent(s.position_percentile_52w, 0) : "--"}
                     </td>
                     <td className="text-right py-1.5 px-2 tabular-nums">{(s.crowding_score * 100).toFixed(0)}</td>
@@ -185,30 +168,12 @@ export default function CommodityDetailPage() {
   );
 }
 
-function MetricBox({
-  label,
-  value,
-  positive,
-}: {
-  label: string;
-  value: string;
-  positive?: boolean;
-}) {
-  const colorClass =
-    positive === undefined
-      ? "text-text-primary"
-      : positive
-        ? "num-positive"
-        : "num-negative";
-
+function MetricBox({ label, value, positive }: { label: string; value: string; positive?: boolean }) {
+  const colorClass = positive === undefined ? "text-text-primary" : positive ? "num-positive" : "num-negative";
   return (
     <div className="bg-terminal-bg border border-terminal-border rounded p-2.5">
-      <div className="text-[10px] text-text-muted uppercase tracking-wider mb-1">
-        {label}
-      </div>
-      <div className={`text-[15px] font-bold tabular-nums ${colorClass}`}>
-        {value}
-      </div>
+      <div className="text-[10px] text-text-muted uppercase tracking-wider mb-1">{label}</div>
+      <div className={`text-[15px] font-bold tabular-nums ${colorClass}`}>{value}</div>
     </div>
   );
 }
