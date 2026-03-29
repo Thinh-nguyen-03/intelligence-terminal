@@ -35,12 +35,12 @@ export function RegimeCard({ regime }: Props) {
             {regime.regime_label.replace(" (transitioning)", "")}
           </div>
           {regime.is_transitioning && (
-            <div className="text-[11px] text-amber mt-1 uppercase tracking-wide">
-              ⚡ Transitioning
+            <div className="text-[10px] text-amber mt-1 uppercase tracking-widest">
+              Transitioning
             </div>
           )}
           {regime.transition_detail && (
-            <div className="text-[11px] text-text-muted mt-1">
+            <div className="text-[11px] text-text-secondary mt-1 uppercase tracking-wide">
               {regime.transition_detail}
             </div>
           )}

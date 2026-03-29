@@ -94,7 +94,7 @@ export default function AlertsPage() {
                     Regime:{" "}
                     <span className={regimeColor(alert.regime_label)}>
                       {alert.regime_label.replace(" (transitioning)", "")}
-                      {alert.regime_label.includes("transitioning") && " ⟳"}
+                      {alert.regime_label.includes("transitioning") && " [T]"}
                     </span>
                   </span>
                   <span>
