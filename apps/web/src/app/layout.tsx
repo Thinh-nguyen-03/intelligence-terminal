@@ -21,7 +21,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={jetbrainsMono.variable}>
-      <body className="flex flex-col h-screen overflow-hidden">
+      <body className="flex flex-col h-screen overflow-hidden" suppressHydrationWarning>
         <Header />
         <main className="flex-1 overflow-auto p-3">{children}</main>
         <StatusBar />

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 
 const NAV_ITEMS = [
@@ -60,16 +61,26 @@ export function Header() {
 }
 
 function Clock() {
-  return (
-    <span suppressHydrationWarning>
-      {new Date().toLocaleString("en-US", {
-        weekday: "short",
-        month: "short",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-        timeZoneName: "short",
-      })}
-    </span>
-  );
+  const [time, setTime] = useState<string>("");
+
+  useEffect(() => {
+    function tick() {
+      setTime(
+        new Date().toLocaleString("en-US", {
+          weekday: "short",
+          month: "short",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          timeZoneName: "short",
+        })
+      );
+    }
+    tick();
+    const id = setInterval(tick, 60000);
+    return () => clearInterval(id);
+  }, []);
+
+  if (!time) return null;
+  return <span>{time}</span>;
 }
