@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/0510t/intelligence-terminal/apps/api/internal/domain"
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -44,23 +43,19 @@ func (r *MacroRepo) ListEnabledSeries(ctx context.Context) ([]domain.MacroSeries
 }
 
 // GetLatestObservationDate returns the most recent observation date for a series, or nil if none exist.
+// MAX() always returns a row (never ErrNoRows), but returns NULL when no data exists.
+// We scan into *time.Time so pgx sets it to nil on NULL rather than erroring.
 func (r *MacroRepo) GetLatestObservationDate(ctx context.Context, seriesID int64) (*time.Time, error) {
-	var d time.Time
+	var d *time.Time
 	err := r.pool.QueryRow(ctx, `
 		SELECT MAX(observation_date)
 		FROM macro_observations_clean
 		WHERE series_id = $1
 	`, seriesID).Scan(&d)
 	if err != nil {
-		if err == pgx.ErrNoRows {
-			return nil, nil
-		}
 		return nil, fmt.Errorf("querying latest observation: %w", err)
 	}
-	if d.IsZero() {
-		return nil, nil
-	}
-	return &d, nil
+	return d, nil
 }
 
 // InsertRawObservation inserts a raw FRED/ALFRED observation.

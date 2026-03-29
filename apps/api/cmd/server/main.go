@@ -79,30 +79,33 @@ func main() {
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
-	r.Use(middleware.Timeout(30 * time.Second))
 
 	r.Route("/api/v1", func(r chi.Router) {
-		// Public endpoints
-		r.Get("/health", healthHandler(pool))
+		// Public endpoints — 30s timeout
+		r.Group(func(r chi.Router) {
+			r.Use(middleware.Timeout(30 * time.Second))
 
-		// Regime
-		r.Get("/regime/current", regimeHandlers.GetCurrent)
-		r.Get("/regime/history", regimeHandlers.GetHistory)
+			r.Get("/health", healthHandler(pool))
 
-		// Commodities
-		r.Get("/commodities", commodityHandlers.List)
-		r.Get("/commodities/rankings", commodityHandlers.GetRankings)
-		r.Get("/commodities/{slug}", commodityHandlers.GetDetail)
-		r.Get("/commodities/{slug}/history", commodityHandlers.GetHistory)
+			// Regime
+			r.Get("/regime/current", regimeHandlers.GetCurrent)
+			r.Get("/regime/history", regimeHandlers.GetHistory)
 
-		// Alerts
-		r.Get("/alerts", alertHandlers.List)
-		r.Get("/alerts/{id}", alertHandlers.GetByID)
+			// Commodities
+			r.Get("/commodities", commodityHandlers.List)
+			r.Get("/commodities/rankings", commodityHandlers.GetRankings)
+			r.Get("/commodities/{slug}", commodityHandlers.GetDetail)
+			r.Get("/commodities/{slug}/history", commodityHandlers.GetHistory)
 
-		// Freshness
-		r.Get("/freshness", freshnessHandlers.Get)
+			// Alerts
+			r.Get("/alerts", alertHandlers.List)
+			r.Get("/alerts/{id}", alertHandlers.GetByID)
 
-		// Internal endpoints (auth required)
+			// Freshness
+			r.Get("/freshness", freshnessHandlers.Get)
+		})
+
+		// Internal endpoints — no request timeout (jobs can run for minutes)
 		r.Route("/internal", func(r chi.Router) {
 			r.Use(auth.InternalAuth(cfg.InternalAuthToken))
 
@@ -117,7 +120,7 @@ func main() {
 		Addr:         fmt.Sprintf(":%s", cfg.Port),
 		Handler:      r,
 		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 120 * time.Second, // longer for ingestion endpoints
+		WriteTimeout: 20 * time.Minute, // internal job endpoints can run for several minutes
 		IdleTimeout:  60 * time.Second,
 	}
 
